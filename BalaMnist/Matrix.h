@@ -1,0 +1,65 @@
+#pragma once
+
+#include <vector>
+
+class Matrix
+{
+	
+	int n, m;
+
+public:
+	std::vector<float> values;
+
+	Matrix();
+	Matrix(int n, int m, float defVal = 0.0f);
+
+	Matrix& operator=(Matrix other);
+
+	Matrix(const Matrix& other);
+
+	Matrix(Matrix&& other);
+
+	float& operator()(int i);
+
+	float operator()(int i) const;
+
+	float& operator()(int i, int j);
+	float operator()(int i, int j) const;
+
+	int N() const;
+
+	int M() const;
+
+	Matrix transpose() const;
+
+	
+	friend void swap(Matrix& m1, Matrix& m2);
+	
+};
+
+
+void swap(Matrix& m1, Matrix& m2);
+
+
+Matrix operator-(const Matrix& m);
+
+Matrix operator+(const Matrix& m1, const Matrix& m2);
+
+Matrix operator-(const Matrix& m1, const Matrix& m2);
+
+Matrix operator*(const Matrix& m1, const Matrix& m2);
+
+
+
+void printMx(const Matrix& m);
+
+Matrix sigmoidM(const Matrix& m);
+
+Matrix logM(const Matrix& m);
+
+//cuts out a part of a Matrix into a new Matrix
+Matrix rangeM(const Matrix& m, int i, int j, int w, int h);
+
+Matrix appendBelowM(const Matrix& m1, const Matrix& m2);
+
+Matrix onesM(int i, int j);
