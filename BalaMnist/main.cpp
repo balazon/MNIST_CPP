@@ -11,6 +11,8 @@
 
 #include "Matrix.h"
 
+#include "GradientDescent.h"
+
 #define HIGH_ENDIAN
 
 
@@ -70,7 +72,7 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 
 	unsigned char* pixels = new unsigned char[M * rows * columns];
 	imageFile.read((char*)pixels, M * rows * columns);
-	X = Matrix(M, rows * columns);
+	X = Matrix(M, rows * columns + 1);
 	
 	
 	shuffleIndexes.clear();
@@ -85,11 +87,12 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 
 	for (int k = 0; k < M; k++)
 	{
+		X(shuffleIndexes[k], 0) = 1.0f; //bias
 		for (int i = 0; i < rows * columns; i++)
 		{
 			int index = k * rows * columns + i;
 			
-			X(shuffleIndexes[k], i) = (float)(pixels[index]) / 255.f;
+			X(shuffleIndexes[k], i + 1) = (float)(pixels[index]) / 255.f;
 		}
 	}
 
@@ -182,7 +185,16 @@ void loadData()
 	
 }
 
-
+void testGradientDescent()
+{
+	std::vector<float> x = { 5.5f };
+	auto cost = [](const std::vector<float>& theta, std::vector<float>& grad) {
+		grad[0] = 2.f * theta[0] - 8.f;
+		return (theta[0] - 4.f) * (theta[0] - 4.f);
+	};
+	gradientDescent(cost, x, 0.001f, 10000);
+	printf("gradient descent result: %.2f", x[0]);
+}
 
 void testMath()
 {
@@ -277,8 +289,10 @@ void testMath()
 
 int main()
 {
-	
-	printf("Loading data..\n");
+	testGradientDescent();
+
+
+	/*printf("Loading data..\n");
 	loadData();
 	printf("Loading data finished.\n");
 
@@ -299,7 +313,7 @@ int main()
 
 	printf("Training accuracy: %f\n", meanAllM(p == ytest));
 
-	printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));
+	printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));*/
 
 	//testMath();
 

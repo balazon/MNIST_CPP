@@ -18,6 +18,15 @@ Matrix::Matrix(int n, int m, float defVal) : n{ n }, m{ m }, values((size_t)(n *
 
 }
 
+
+
+Matrix::Matrix(int n, int m, std::vector<float>::const_iterator first, std::vector<float>::const_iterator last,
+	const std::vector<float>::allocator_type& alloc) : n{ n }, m{ m }, values{first, last, alloc}
+{
+	values = std::vector<float>(first, last, alloc);
+	values.resize((size_t)n * m, 0.0f);
+}
+
 Matrix& Matrix::operator=(Matrix other)
 {
 	swap(*this, other);

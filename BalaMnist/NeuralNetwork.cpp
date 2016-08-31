@@ -8,9 +8,11 @@ NeuralNetwork::NeuralNetwork(int inputSize, float lambda) : inputSize{ inputSize
 
 }
 
+
+
 void NeuralNetwork::addSimpleLayer(int nodeSize)
 {
-	int w = layers.size() == 0 ? inputSize + 1 : layers.back()->Theta.N() + 1;
+	int w = layers.size() == 0 ? inputSize : layers.back()->Theta.N() + 1;
 	layers.push_back(std::make_shared<SimpleHiddenLayer>(nodeSize, w));
 }
 
@@ -33,7 +35,7 @@ void NeuralNetwork::initWeights()
 }
 
 
-float NeuralNetwork::costFunction(const Matrix& X, const Matrix& y, int K)
+float NeuralNetwork::costFunction(const Matrix& X, const Matrix& y, int K, Matrix& gradient)
 {
 	int m = X.N();
 
@@ -66,8 +68,12 @@ Matrix NeuralNetwork::hypothesis(const Matrix& X)
 {
 	int m = X.N();
 
-	Matrix a = X;
-	for (int i = 0; i < layers.size(); i++)
+	//X already has the ones(..)
+	Matrix a = sigmoidM(
+		mulFirstWithSecondTransposedM(X, layers[0]->Theta)
+	);
+
+	for (int i = 1; i < layers.size(); i++)
 	{
 		a = sigmoidM(
 			mulFirstWithSecondTransposedM(

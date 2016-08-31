@@ -13,6 +13,7 @@ class NeuralNetwork
 	float lambda;
 
 	std::vector<std::shared_ptr<SimpleHiddenLayer>> layers;
+
 public:
 	NeuralNetwork(int inputSize, float lambda);
 
@@ -26,7 +27,7 @@ public:
 
 	void validate() {}
 
-	float costFunction(const Matrix& X, const Matrix& y, int K);
+	float costFunction(const Matrix& X, const Matrix& y, int K, Matrix& gradient);
 
 	Matrix hypothesis(const Matrix& X);
 

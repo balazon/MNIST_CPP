@@ -142,11 +142,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GradientDescent.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="NeuralNetwork.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GradientDescent.h" />
     <ClInclude Include="ImageClassificationData.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="NeuralNetwork.h" />
