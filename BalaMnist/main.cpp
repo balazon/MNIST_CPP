@@ -2,10 +2,14 @@
 #include <fstream>
 #include <string>
 #include <intrin.h>
-#include "Matrix.h"
+#include <numeric>
+#include <algorithm>
+#include <chrono>
+#include <random>
 
 #include "NeuralNetwork.h"
-#include <numeric>
+
+#include "Matrix.h"
 
 #define HIGH_ENDIAN
 
@@ -41,7 +45,9 @@ Matrix Xtest;
 Matrix ytest;
 
 
-void loadImages(const char* path, Matrix& X)
+
+
+void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 {
 	std::ifstream imageFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
 	if (!imageFile.is_open())
@@ -67,6 +73,15 @@ void loadImages(const char* path, Matrix& X)
 	X = Matrix(M, rows * columns);
 	
 	
+	shuffleIndexes.clear();
+	shuffleIndexes.reserve(M);
+	for (int i = 0; i < M; i++)
+	{
+		shuffleIndexes.push_back(i);
+	}
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::shuffle(shuffleIndexes.begin(), shuffleIndexes.end(), std::default_random_engine(seed));
+
 
 	for (int k = 0; k < M; k++)
 	{
@@ -74,7 +89,7 @@ void loadImages(const char* path, Matrix& X)
 		{
 			int index = k * rows * columns + i;
 			
-			X(k, i) = (float)(pixels[index]) / 255.f;
+			X(shuffleIndexes[k], i) = (float)(pixels[index]) / 255.f;
 		}
 	}
 
@@ -82,7 +97,7 @@ void loadImages(const char* path, Matrix& X)
 	imageFile.close();
 }
 
-void loadLabels(const char* path, Matrix& y)
+void loadLabels(const char* path, Matrix& y, std::vector<int>& shuffleIndexes)
 {
 	std::ifstream labelFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
 	if (!labelFile.is_open())
@@ -110,7 +125,7 @@ void loadLabels(const char* path, Matrix& y)
 
 	for (int k = 0; k < M; k++)
 	{
-		y(k) = (float)labels[k];
+		y(shuffleIndexes[k]) = (float)labels[k];
 	}
 
 	delete[] labels;
@@ -126,8 +141,8 @@ void splitTrainingData(float trainRatio, const Matrix& X, const Matrix& y, Matri
 	int numTrain = (int)(m * trainRatio);
 	int numVal = m - numTrain;
 
-	numTrain /= 15;
-	numVal /= 15;
+	numTrain /= 150;
+	numVal /= 150;
 
 	int w = X.M();
 
@@ -144,22 +159,24 @@ void loadData()
 	Matrix X;
 	Matrix y;
 
+	std::vector<int> shuffleIndexes;
+
 	printf("  Loading train images..\n");
-	loadImages("Data\\train-images.idx3-ubyte", X);
+	loadImages("Data\\train-images.idx3-ubyte", X, shuffleIndexes);
 	
 	printf("  Loading train labels..\n");
-	loadLabels("Data\\train-labels.idx1-ubyte", y);
+	loadLabels("Data\\train-labels.idx1-ubyte", y, shuffleIndexes);
 	
 	printf("  Splitting train data..\n");
 	splitTrainingData(0.75, X, y, Xtrain, ytrain, Xval, yval);
 
 	printf("  Loading test images..\n");
-	loadImages("Data\\t10k-images.idx3-ubyte", Xtest);
-	int testCount = Xtest.N() / 10;
+	loadImages("Data\\t10k-images.idx3-ubyte", Xtest, shuffleIndexes);
+	int testCount = Xtest.N() / 100;
 	Xtest = rangeM(Xtest, 0, 0, Xtest.M(), testCount);
 
 	printf("  Loading test labels..\n");
-	loadLabels("Data\\t10k-labels.idx1-ubyte", ytest);
+	loadLabels("Data\\t10k-labels.idx1-ubyte", ytest, shuffleIndexes);
 	ytest = rangeM(ytest, 0, 0, ytest.M(), testCount);
 
 	
@@ -167,7 +184,7 @@ void loadData()
 
 
 
-void testMxOperations()
+void testMath()
 {
 	Matrix a(3, 3);
 	a(0, 0) = 1;
@@ -282,6 +299,9 @@ int main()
 
 	printf("Training accuracy: %f\n", meanAllM(p == ytest));
 
+	printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));
+
+	//testMath();
 
 	
 	return 0;

@@ -49,7 +49,11 @@ Matrix operator-(const Matrix& m1, const Matrix& m2);
 
 Matrix operator*(const Matrix& m1, const Matrix& m2);
 
+Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2);
+
 Matrix operator==(const Matrix& m1, const Matrix& m2);
+
+Matrix mulElementWiseM(const Matrix& m1, const Matrix& m2);
 
 
 Matrix operator+(const Matrix& m, float val);
@@ -76,10 +80,16 @@ Matrix appendBelowM(const Matrix& m1, const Matrix& m2);
 
 Matrix appendNextToM(const Matrix& m1, const Matrix& m2);
 
+Matrix zeros(int i, int j);
+
 Matrix onesM(int i, int j);
 
 Matrix maxIndexByRowsM(const Matrix& m);
 
+Matrix sumByRowsM(const Matrix& m);
+
 float sumAllM(const Matrix& m);
 
 float meanAllM(const Matrix& m);
+
+float sumSquaredAllM(const Matrix& m);

@@ -3,6 +3,10 @@
 
 #include <random>
 
+NeuralNetwork::NeuralNetwork(int inputSize, float lambda) : inputSize{ inputSize }, lambda{ lambda }
+{
+
+}
 
 void NeuralNetwork::addSimpleLayer(int nodeSize)
 {
@@ -29,33 +33,55 @@ void NeuralNetwork::initWeights()
 }
 
 
-Matrix NeuralNetwork::predict(const Matrix& X)
+float NeuralNetwork::costFunction(const Matrix& X, const Matrix& y, int K)
 {
-	/*m = size(X, 1);
-	num_labels = size(Theta2, 1);
-
-	% You need to return the following variables correctly
-		p = zeros(size(X, 1), 1);
-
-	h1 = sigmoid([ones(m, 1) X] * Theta1');
-		h2 = sigmoid([ones(m, 1) h1] * Theta2');
-			[dummy, p] = max(h2, [], 2);*/
-
-
-	/*
-	a1 = [ones(m, 1) X];
-	a2 = [ones(m, 1) sigmoid(a1 * Theta1')];
-	a3 = sigmoid(a2 * Theta2');
-	[~, p] = max(a3, [], 2);
-
-	*/
-
 	int m = X.N();
+
+	//yb: binary labels
+	Matrix yb{ y.N(), K };
+	for (int i = 0; i < m; i++)
+	{
+		yb(i, (int)(y(i) + 0.1f)) = 1.0f;
+	}
+
+	Matrix h = hypothesis(X);
 	
+	float reg = 0.0f;
+	for (int i = 0; i < layers.size(); i++)
+	{
+		const Matrix& Theta = layers[i]->Theta;
+		Matrix bias = rangeM(Theta, 0, 0, 1, Theta.N());
+		reg += sumSquaredAllM(Theta) - sumSquaredAllM(bias);
+	}
+	reg *= lambda * 0.5f / m;
+
+	
+	float J = -meanAllM(sumByRowsM(mulElementWiseM(yb, logM(h)) + mulElementWiseM(-yb + 1.0f, logM(-h + 1.0f))));
+	J += reg;
+
+	return J;
+}
+
+Matrix NeuralNetwork::hypothesis(const Matrix& X)
+{
+	int m = X.N();
+
 	Matrix a = X;
 	for (int i = 0; i < layers.size(); i++)
 	{
-		a = sigmoidM(appendNextToM(onesM(m, 1), a) * layers[i]->Theta.transpose());
+		a = sigmoidM(
+			mulFirstWithSecondTransposedM(
+				appendNextToM(onesM(m, 1), a), layers[i]->Theta)
+		);
+
 	}
-	return maxIndexByRowsM(a);
+	return a;
+}
+
+
+Matrix NeuralNetwork::predict(const Matrix& X)
+{
+	Matrix h = hypothesis(X);
+	
+	return maxIndexByRowsM(h);
 }
