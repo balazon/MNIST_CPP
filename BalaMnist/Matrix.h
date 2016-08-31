@@ -49,6 +49,18 @@ Matrix operator-(const Matrix& m1, const Matrix& m2);
 
 Matrix operator*(const Matrix& m1, const Matrix& m2);
 
+Matrix operator==(const Matrix& m1, const Matrix& m2);
+
+
+Matrix operator+(const Matrix& m, float val);
+
+Matrix operator-(const Matrix& m, float val);
+
+Matrix operator*(const Matrix& m, float val);
+
+Matrix operator/(const Matrix& m, float val);
+
+
 
 
 void printMx(const Matrix& m);
@@ -62,4 +74,12 @@ Matrix rangeM(const Matrix& m, int i, int j, int w, int h);
 
 Matrix appendBelowM(const Matrix& m1, const Matrix& m2);
 
+Matrix appendNextToM(const Matrix& m1, const Matrix& m2);
+
 Matrix onesM(int i, int j);
+
+Matrix maxIndexByRowsM(const Matrix& m);
+
+float sumAllM(const Matrix& m);
+
+float meanAllM(const Matrix& m);

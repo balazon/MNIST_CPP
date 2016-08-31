@@ -4,6 +4,9 @@
 #include <intrin.h>
 #include "Matrix.h"
 
+#include "NeuralNetwork.h"
+#include <numeric>
+
 #define HIGH_ENDIAN
 
 
@@ -40,7 +43,6 @@ Matrix ytest;
 
 void loadImages(const char* path, Matrix& X)
 {
-	std::cout << "Loading images..\n";
 	std::ifstream imageFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
 	if (!imageFile.is_open())
 	{
@@ -82,7 +84,6 @@ void loadImages(const char* path, Matrix& X)
 
 void loadLabels(const char* path, Matrix& y)
 {
-	std::cout << "Loading labels..\n";
 	std::ifstream labelFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
 	if (!labelFile.is_open())
 	{
@@ -125,6 +126,9 @@ void splitTrainingData(float trainRatio, const Matrix& X, const Matrix& y, Matri
 	int numTrain = (int)(m * trainRatio);
 	int numVal = m - numTrain;
 
+	numTrain /= 15;
+	numVal /= 15;
+
 	int w = X.M();
 
 	Xtrain = rangeM(X, 0, 0, w, numTrain);
@@ -139,27 +143,32 @@ void loadData()
 {
 	Matrix X;
 	Matrix y;
+
+	printf("  Loading train images..\n");
 	loadImages("Data\\train-images.idx3-ubyte", X);
 	
+	printf("  Loading train labels..\n");
 	loadLabels("Data\\train-labels.idx1-ubyte", y);
 	
+	printf("  Splitting train data..\n");
 	splitTrainingData(0.75, X, y, Xtrain, ytrain, Xval, yval);
 
+	printf("  Loading test images..\n");
 	loadImages("Data\\t10k-images.idx3-ubyte", Xtest);
+	int testCount = Xtest.N() / 10;
+	Xtest = rangeM(Xtest, 0, 0, Xtest.M(), testCount);
 
+	printf("  Loading test labels..\n");
 	loadLabels("Data\\t10k-labels.idx1-ubyte", ytest);
+	ytest = rangeM(ytest, 0, 0, ytest.M(), testCount);
+
 	
 }
 
 
 
-
-int main()
+void testMxOperations()
 {
-	
-
-	//loadData();
-
 	Matrix a(3, 3);
 	a(0, 0) = 1;
 	a(1, 1) = 2;
@@ -207,5 +216,73 @@ int main()
 	Matrix e = appendBelowM(onesM(1, 3), d);
 	printMx(e);
 
+	std::cout << "\n";
+	Matrix f = appendNextToM(onesM(4, 1), d);
+	printMx(f);
+
+	std::cout << "\n";
+	printMx(maxIndexByRowsM(f));
+	std::cout << "\n";
+
+	Matrix g{ 10, 1 };
+	Matrix h{ 10, 1 };
+	g(0) = 2;
+	g(1) = 1;
+	g(2) = 5;
+	g(3) = 2;
+	g(4) = 7;
+	g(5) = 3;
+	g(6) = 7;
+	g(7) = 4;
+	g(8) = 4;
+	g(9) = 1;
+
+	h(0) = 1;
+	h(1) = 5;
+	h(2) = 5;
+	h(3) = 2;
+	h(4) = 3;
+	h(5) = 3;
+	h(6) = 3;
+	h(7) = 4;
+	h(8) = 1;
+	h(9) = 1;
+	printMx(g);
+	std::cout << "\n";
+	printMx(h);
+	std::cout << "\n";
+	printMx(g == h);
+	std::cout << "\n" << meanAllM(g == h) << "\n";
+
+	
+}
+
+
+int main()
+{
+	
+	printf("Loading data..\n");
+	loadData();
+	printf("Loading data finished.\n");
+
+	printf("Creating NN\n");
+	NeuralNetwork nn{ Xtrain.M(), 1.0f };
+
+	nn.addSimpleLayer(25);
+
+	nn.addSimpleLayer(10);
+
+	printf("NN Init weights\n");
+	nn.initWeights();
+
+	nn.train(Xtrain, ytrain, Xval, yval);
+
+	printf("NN predict\n");
+	Matrix p = nn.predict(Xtest);
+
+	printf("Training accuracy: %f\n", meanAllM(p == ytest));
+
+
+	
 	return 0;
 }

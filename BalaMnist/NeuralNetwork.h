@@ -22,12 +22,14 @@ public:
 	void addSimpleLayer(int nodeSize);
 	
 
-	void addOutputLayer(int outputSize);
+	void initWeights();
 	
 
 	void train(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& xval, const Matrix& yval) {}
 
 	void validate() {}
+
+	Matrix predict(const Matrix& X);
 };
 
 class SimpleHiddenLayer

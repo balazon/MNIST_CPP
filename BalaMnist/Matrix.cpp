@@ -8,7 +8,9 @@
 #include <functional>
 #include <string>
 
+#include <numeric>
 
+#define EPS 1e-6
 
 Matrix::Matrix() : Matrix(1, 1) {}
 Matrix::Matrix(int n, int m, float defVal) : n{ n }, m{ m }, values((size_t)(n * m), defVal)
@@ -173,20 +175,99 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
 		return Matrix();
 	}
 
+	Matrix m2T = m2.transpose();
+
 	Matrix res{ m1.N(), m2.M() };
 	for (int i = 0; i < res.N(); i++)
 	{
 		for (int j = 0; j < res.M(); j++)
 		{
+			float sum = 0.0f;
 			for (int k = 0; k < m1.M(); k++)
 			{
-				res(i, j) += m1(i, k) * m2(k, j);
+				 sum += m1(i, k) * m2T(j, k);
 			}
+			res(i, j) = sum;
 		}
 	}
 
 	return res;
 }
+
+Matrix operator==(const Matrix& m1, const Matrix& m2)
+{
+	if (m1.N() != m2.N() || m1.M() != m2.M())
+	{
+		// error..
+		std::cout << "error\n";
+		return Matrix();
+	}
+
+	Matrix res{ m1.N(), m1.M() };
+	for (int i = 0; i < m1.N(); i++)
+	{
+		for (int j = 0; j < m1.M(); j++)
+		{
+			res(i, j) = fabs(m1(i, j) - m2(i, j)) < EPS ? 1.0f : 0.0f;
+		}
+	}
+
+	return res;
+}
+
+
+
+
+Matrix operator+(const Matrix& m, float val)
+{
+	Matrix res = m;
+
+	for (int i = 0; i < m.N() * m.M(); i++)
+	{
+		res(i) = m(i) + val;
+	}
+	return res;
+}
+
+Matrix operator-(const Matrix& m, float val)
+{
+	Matrix res = m;
+
+	for (int i = 0; i < m.N() * m.M(); i++)
+	{
+		res(i) = m(i) - val;
+	}
+	return res;
+}
+
+Matrix operator*(const Matrix& m, float val)
+{
+	Matrix res = m;
+
+	for (int i = 0; i < m.N() * m.M(); i++)
+	{
+		res(i) = m(i) * val;
+	}
+	return res;
+}
+
+Matrix operator/(const Matrix& m, float val)
+{
+	if (fabs(val) < EPS)
+	{
+		// error..
+		std::cout << "error\n";
+		return Matrix();
+	}
+	Matrix res = m;
+
+	for (int i = 0; i < m.N() * m.M(); i++)
+	{
+		res(i) = m(i) / val;
+	}
+	return res;
+}
+
 
 
 
@@ -256,8 +337,66 @@ Matrix appendBelowM(const Matrix& m1, const Matrix& m2)
 	return res;
 }
 
+void copyMatInM(const Matrix& source, Matrix& dest, int i, int j)
+{
+	for (int k = 0; k < source.N(); k++)
+	{
+		for (int l = 0; l < source.M(); l++)
+		{
+			dest(k + i, l + j) = source(k, l);
+		}
+	}
+}
+
+Matrix appendNextToM(const Matrix& m1, const Matrix& m2)
+{
+	if (m1.N() != m2.N())
+	{
+		// error..
+		std::cout << "error\n";
+		return Matrix();
+	}
+	Matrix res{ m1.N(), m1.M() + m2.M() };
+	copyMatInM(m1, res, 0, 0);
+	copyMatInM(m2, res, 0, m1.M());
+	return res;
+}
+
 Matrix onesM(int i, int j)
 {
 	return Matrix(i, j, 1.0f);
 }
 
+Matrix maxIndexByRowsM(const Matrix& m)
+{
+	Matrix res{ m.N(), 1 };
+
+	for (int i = 0; i < m.N(); i++)
+	{
+		float maxVal = FLT_MIN;
+		int maxIndex = 0;
+		for (int j = 0; j < m.M(); j++)
+		{
+			float t = m(i, j);
+			if (t > maxVal)
+			{
+				maxVal = t;
+				maxIndex = j;
+			}
+		}
+		res(i) = (float)maxIndex;
+	}
+
+	return res;
+}
+
+float sumAllM(const Matrix& m)
+{
+	return std::accumulate(m.values.begin(), m.values.end(), 0.0f, std::plus<float>());
+}
+
+
+float meanAllM(const Matrix& m)
+{
+	return sumAllM(m) / (float)(m.N() * m.M());
+}
