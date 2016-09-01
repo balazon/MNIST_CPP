@@ -192,7 +192,7 @@ void testGradientDescent()
 		grad[0] = 2.f * theta[0] - 8.f;
 		return (theta[0] - 4.f) * (theta[0] - 4.f);
 	};
-	gradientDescent(cost, x, 0.001f, 10000);
+	gradientDescent(cost, x, 0.1f, 100);
 	printf("gradient descent result: %.2f", x[0]);
 }
 
@@ -289,10 +289,12 @@ void testMath()
 
 int main()
 {
-	testGradientDescent();
+	//testGradientDescent();
+
+	//testMath();
 
 
-	/*printf("Loading data..\n");
+	printf("Loading data..\n");
 	loadData();
 	printf("Loading data finished.\n");
 
@@ -306,6 +308,7 @@ int main()
 	printf("NN Init weights\n");
 	nn.initWeights();
 
+	printf("NN train (gradient descent)\n");
 	nn.train(Xtrain, ytrain, Xval, yval);
 
 	printf("NN predict\n");
@@ -313,9 +316,9 @@ int main()
 
 	printf("Training accuracy: %f\n", meanAllM(p == ytest));
 
-	printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));*/
+	//printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));
 
-	//testMath();
+	
 
 	
 	return 0;

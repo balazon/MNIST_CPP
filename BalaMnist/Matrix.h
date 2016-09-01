@@ -74,6 +74,8 @@ void printMx(const Matrix& m);
 
 Matrix sigmoidM(const Matrix& m);
 
+Matrix sigmoidGradientM(const Matrix& m);
+
 Matrix logM(const Matrix& m);
 
 //cuts out a part of a Matrix into a new Matrix
@@ -81,7 +83,13 @@ Matrix rangeM(const Matrix& m, int i, int j, int w, int h);
 
 Matrix appendBelowM(const Matrix& m1, const Matrix& m2);
 
+void copyMatInM(const Matrix& source, Matrix& dest, int i, int j);
+
 Matrix appendNextToM(const Matrix& m1, const Matrix& m2);
+
+Matrix reshapeM(const Matrix& thetas, int startIndex, int n, int m);
+
+Matrix unrollAllM(const std::vector<Matrix>& matrices);
 
 Matrix zeros(int i, int j);
 
@@ -96,3 +104,5 @@ float sumAllM(const Matrix& m);
 float meanAllM(const Matrix& m);
 
 float sumSquaredAllM(const Matrix& m);
+
+

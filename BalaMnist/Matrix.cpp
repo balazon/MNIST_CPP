@@ -177,6 +177,7 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
 
 Matrix operator*(const Matrix& m1, const Matrix& m2)
 {
+	// transpose second first for improved cache efficiency
 	Matrix m2T = m2.transpose();
 
 	return mulFirstWithSecondTransposedM(m1, m2T);
@@ -341,7 +342,18 @@ Matrix sigmoidM(const Matrix& m)
 	Matrix res = m;
 	for (float& val : res.values)
 	{
-		val = 1.0f / (1.0f + expf(val));
+		val = 1.0f / (1.0f + expf(-val));
+	}
+	return res;
+}
+
+Matrix sigmoidGradientM(const Matrix& m)
+{
+	Matrix res = m;
+	for (float& val : res.values)
+	{
+		float sigm = 1.0f / (1.0f + expf(-val));
+		val = sigm * (1.0f - sigm);
 	}
 	return res;
 }
@@ -409,6 +421,33 @@ Matrix appendNextToM(const Matrix& m1, const Matrix& m2)
 	Matrix res{ m1.N(), m1.M() + m2.M() };
 	copyMatInM(m1, res, 0, 0);
 	copyMatInM(m2, res, 0, m1.M());
+	return res;
+}
+
+Matrix reshapeM(const Matrix& thetas, int startIndex, int n, int m)
+{
+	Matrix res{ n, m };
+	res.values.clear();
+	res.values.insert(res.values.end(), thetas.values.cbegin() + startIndex, thetas.values.cbegin() + startIndex + n * m);
+	return res;
+}
+
+Matrix unrollAllM(const std::vector<Matrix>& matrices)
+{
+	int count = 0;
+	for (int i = 0; i < matrices.size(); i++)
+	{
+		count += matrices[i].values.size();
+	}
+	Matrix res{ 1, count };
+	res.values.clear();
+
+	for (int i = 0; i < matrices.size(); i++)
+	{
+		const Matrix& m = matrices[i];
+		res.values.insert(res.values.end(), m.values.cbegin(), m.values.cend());
+	}
+
 	return res;
 }
 
