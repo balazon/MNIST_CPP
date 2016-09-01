@@ -507,12 +507,45 @@ float meanAllM(const Matrix& m)
 }
 
 
-float mySumSquare(float x, float y)
-{
-	return x + y * y;
-}
 
 float sumSquaredAllM(const Matrix& m)
 {
-	return std::accumulate(m.values.cbegin(), m.values.cend(), 0.0f, mySumSquare);
+	return std::inner_product(m.values.cbegin(), m.values.cend(), m.values.cbegin(), 0.0f);
+}
+
+
+float standardDevM(const Matrix& m)
+{
+	float mean = meanAllM(m);
+	return standardDevM(m, mean);
+}
+
+float standardDevM(const Matrix& m, float mean)
+{
+	if (m.values.size() == 1)
+	{
+		return 0.0f;
+	}
+	const std::vector<float>& v = m.values;
+	std::vector<float> diff(v.size());
+	std::transform(v.cbegin(), v.cend(), diff.begin(), [mean](float x) { return x - mean; });
+
+	float sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0f);
+	
+	float stdev = sqrtf(sq_sum / (v.size() - 1.0f));
+
+	return stdev;
+}
+
+Matrix normalizeM(const Matrix& m, float& mean, float& stdev)
+{
+	Matrix res = m;
+	
+	mean = meanAllM(m);
+	stdev = standardDevM(m, mean);
+
+	res = res - mean;
+	res = res / stdev;
+
+	return res;
 }

@@ -4,7 +4,7 @@
 #include <random>
 #include "GradientDescent.h"
 
-NeuralNetwork::NeuralNetwork(int inputSize, float lambda) : inputSize{ inputSize }, lambda{ lambda }
+NeuralNetwork::NeuralNetwork(int inputSize, float lambda) : inputSize{ inputSize }, regLambda{ lambda }
 {
 
 }
@@ -36,7 +36,82 @@ void NeuralNetwork::initWeights()
 	}
 }
 
-void NeuralNetwork::train(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& xval, const Matrix& yval)
+
+void NeuralNetwork::trainComplete(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize)
+{
+	std::vector<float> lambdas = { 0.0f, 0.01f, 0.03f, 0.1f, 0.3f };
+
+	std::vector<float> costs;
+	for (float lam : lambdas)
+	{
+
+		trainWithLambda(Xtrain, ytrain, Xval, yval, epochs, batchSize, lam);
+
+		printf("Training with lambda = %.2f complete\n", lam);
+
+		LayerStructure ls = getLayerStructure();
+		Matrix thetasUnrolled = getUnrolledThetas(ls.thetaCount);
+		Matrix grad;
+		float J = costFunction(thetasUnrolled, ls, outputSize, Xval, yval, 0.0f, grad);
+
+		printf("Lambda = %.2f cross validation error cost : %.2f\n", lam, J);
+
+		costs.push_back(J);
+	}
+
+	float minValCost = FLT_MAX;
+	float bestLambda = 0.0f;
+	for (int i = 0; i < lambdas.size(); i++)
+	{
+		printf("Lambda = %.2f cross validation error cost : %.2f\n", lambdas[i], costs[i]);
+
+		if (minValCost > costs[i])
+		{
+			minValCost = costs[i];
+			bestLambda = lambdas[i];
+		}
+	}
+
+	trainWithLambda(Xtrain, ytrain, Xval, yval, epochs, batchSize, bestLambda);
+	
+}
+
+void NeuralNetwork::trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize, float lambda)
+{
+	initWeights();
+
+	for (int i = 0; i < epochs; i++)
+	{
+		printf("Epoch %d start\n", (i + 1));
+
+		int m = Xtrain.N();
+
+		int batchIterations = m / batchSize;
+		if (m % batchSize != 0)
+		{
+			batchIterations++;
+		}
+
+		int currentPosition = 0;
+		for (int j = 0; j < batchIterations; j++)
+		{
+			printf("Epoch %d batch %d \n", (i + 1), (j + 1));
+			int currentBatchSize = (currentPosition + batchSize <= m) ? batchSize : (m - currentPosition);
+
+			Matrix X = rangeM(Xtrain, currentPosition, 0, Xtrain.M(), currentBatchSize);
+			Matrix y = rangeM(ytrain, currentPosition, 0, ytrain.M(), currentBatchSize);
+
+			trainStep(X, y, lambda);
+
+			currentPosition += currentBatchSize;
+		}
+
+	}
+}
+
+
+
+void NeuralNetwork::trainStep(const Matrix& Xtrain, const Matrix& ytrain, float lambda)
 {
 	LayerStructure ls = getLayerStructure();
 	
@@ -46,7 +121,7 @@ void NeuralNetwork::train(const Matrix& Xtrain, const Matrix& ytrain, const Matr
 		return NeuralNetwork::costFunction(theta, ls, outputSize, Xtrain, ytrain, lambda, grad);
 	};
 
-	gradientDescent(cost, thetas, 1.0f, 100);
+	gradientDescent(cost, thetas, 0.1f, 100);
 
 	//update thetas
 	std::vector<Matrix> reshapedThetas = getReshaped(thetas, ls);

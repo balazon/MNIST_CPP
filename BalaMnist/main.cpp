@@ -72,7 +72,7 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 
 	unsigned char* pixels = new unsigned char[M * rows * columns];
 	imageFile.read((char*)pixels, M * rows * columns);
-	X = Matrix(M, rows * columns + 1);
+	X = Matrix(M, rows * columns);
 	
 	
 	shuffleIndexes.clear();
@@ -84,15 +84,13 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 	std::shuffle(shuffleIndexes.begin(), shuffleIndexes.end(), std::default_random_engine(seed));
 
-
 	for (int k = 0; k < M; k++)
 	{
-		X(shuffleIndexes[k], 0) = 1.0f; //bias
 		for (int i = 0; i < rows * columns; i++)
 		{
 			int index = k * rows * columns + i;
 			
-			X(shuffleIndexes[k], i + 1) = (float)(pixels[index]) / 255.f;
+			X(shuffleIndexes[k], i) = (float)(pixels[index]) / 255.f;
 		}
 	}
 
@@ -115,16 +113,10 @@ void loadLabels(const char* path, Matrix& y, std::vector<int>& shuffleIndexes)
 
 	readInt(labelFile, &magic);
 	readInt(labelFile, &M);
-	
-
-
-
 
 	unsigned char* labels = new unsigned char[M];
 	labelFile.read((char*)labels, M);
 	y = Matrix(M, 1);
-
-
 
 	for (int k = 0; k < M; k++)
 	{
@@ -143,9 +135,6 @@ void splitTrainingData(float trainRatio, const Matrix& X, const Matrix& y, Matri
 	int m = X.N();
 	int numTrain = (int)(m * trainRatio);
 	int numVal = m - numTrain;
-
-	numTrain /= 150;
-	numVal /= 150;
 
 	int w = X.M();
 
@@ -167,22 +156,50 @@ void loadData()
 	printf("  Loading train images..\n");
 	loadImages("Data\\train-images.idx3-ubyte", X, shuffleIndexes);
 	
+	
+
 	printf("  Loading train labels..\n");
 	loadLabels("Data\\train-labels.idx1-ubyte", y, shuffleIndexes);
 	
 	printf("  Splitting train data..\n");
 	splitTrainingData(0.75, X, y, Xtrain, ytrain, Xval, yval);
 
+	
+
 	printf("  Loading test images..\n");
 	loadImages("Data\\t10k-images.idx3-ubyte", Xtest, shuffleIndexes);
 	int testCount = Xtest.N() / 100;
-	Xtest = rangeM(Xtest, 0, 0, Xtest.M(), testCount);
+	//Xtest = rangeM(Xtest, 0, 0, Xtest.M(), testCount);
+	
 
 	printf("  Loading test labels..\n");
 	loadLabels("Data\\t10k-labels.idx1-ubyte", ytest, shuffleIndexes);
-	ytest = rangeM(ytest, 0, 0, ytest.M(), testCount);
+	//ytest = rangeM(ytest, 0, 0, ytest.M(), testCount);
+}
 
+void normalizeData()
+{
+	float mean = 0.0f;
+	float stdev = 0.0f;
+	Xtrain = normalizeM(Xtrain, mean, stdev);
 	
+
+	Xval = Xval - mean;
+	Xval = Xval / stdev;
+	
+
+	Xtest = Xtest - mean;
+	Xtest = Xtest / stdev;
+}
+
+void addBiasToData()
+{
+	Xtrain = appendNextToM(onesM(Xtrain.N(), 1), Xtrain);
+
+	Xval = appendNextToM(onesM(Xval.N(), 1), Xval);
+
+	Xtest = appendNextToM(onesM(Xtest.N(), 1), Xtest);
+
 }
 
 void testGradientDescent()
@@ -284,6 +301,16 @@ void testMath()
 	std::cout << "\n" << meanAllM(g == h) << "\n";
 
 	
+	Matrix stats{ 1, 5 };
+	stats(0) = 2.0f;
+	stats(1) = 0.0f;
+	stats(2) = 4.0f;
+	stats(3) = 4.0f;
+	stats(4) = 5.0f;
+
+	printMx(stats);
+	std::cout << "\n";
+	printf("mean: %.2f\nstdev: %.2f\n", meanAllM(stats), standardDevM(stats));
 }
 
 
@@ -298,6 +325,12 @@ int main()
 	loadData();
 	printf("Loading data finished.\n");
 
+	printf("Normalizing data\n");
+	normalizeData();
+	
+	printf("Adding bias\n");
+	addBiasToData();
+
 	printf("Creating NN\n");
 	NeuralNetwork nn{ Xtrain.M(), 1.0f };
 
@@ -305,21 +338,18 @@ int main()
 
 	nn.addSimpleLayer(10);
 
-	printf("NN Init weights\n");
-	nn.initWeights();
 
 	printf("NN train (gradient descent)\n");
-	nn.train(Xtrain, ytrain, Xval, yval);
+	nn.trainComplete(Xtrain, ytrain, Xval, yval, 1, 100);
 
 	printf("NN predict\n");
 	Matrix p = nn.predict(Xtest);
 
 	printf("Training accuracy: %f\n", meanAllM(p == ytest));
 
-	//printf("Current cost: %f\n", nn.costFunction(Xtrain, ytrain, 10));
 
 	
-
+	
 	
 	return 0;
 }

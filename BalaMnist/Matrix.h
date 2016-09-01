@@ -106,3 +106,8 @@ float meanAllM(const Matrix& m);
 float sumSquaredAllM(const Matrix& m);
 
 
+float standardDevM(const Matrix& m);
+
+float standardDevM(const Matrix& m, float mean);
+
+Matrix normalizeM(const Matrix& m, float& mean, float& stdev);

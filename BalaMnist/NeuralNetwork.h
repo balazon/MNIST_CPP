@@ -11,7 +11,7 @@ class NeuralNetwork
 {
 	int inputSize;
 
-	float lambda;
+	float regLambda;
 
 	std::vector<std::shared_ptr<SimpleHiddenLayer>> layers;
 
@@ -26,7 +26,11 @@ public:
 	void initWeights();
 	
 
-	void train(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& xval, const Matrix& yval);
+	void trainComplete(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize);
+
+	void trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize, float lambda);
+
+	void trainStep(const Matrix& Xtrain, const Matrix& ytrain, float lambda);
 
 	void validate() {}
 
