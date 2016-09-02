@@ -3,13 +3,10 @@
 #include "Matrix.h"
 
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <functional>
 #include <string>
-
 #include <numeric>
-
 #define EPS 1e-6
 
 Matrix::Matrix() : Matrix(1, 1) {}
@@ -44,6 +41,36 @@ Matrix::Matrix(Matrix&& other) : Matrix()
 {
 	swap(*this, other);
 }
+
+void swap(Matrix& m1, Matrix& m2)
+{
+	using std::swap;
+
+	std::swap(m1.values, m2.values);
+	std::swap(m1.n, m2.n);
+	std::swap(m1.m, m2.m);
+}
+
+
+
+
+////////////
+
+void printMx(const Matrix& m)
+{
+	std::string prefix = "";
+	for (int i = 0; i < m.N(); i++)
+	{
+		for (int j = 0; j < m.M(); j++)
+		{
+			std::cout << prefix << m(i, j);
+			prefix = " ";
+		}
+		std::cout << "\n";
+		prefix = "";
+	}
+}
+
 
 float& Matrix::operator()(int i)
 {
@@ -104,22 +131,6 @@ Matrix Matrix::transpose() const
 	return res;
 }
 
-
-	//friend void swap(Matrix& m1, Matrix& m2);
-
-
-
-
-void swap(Matrix& m1, Matrix& m2)
-{
-	using std::swap;
-
-	std::swap(m1.values, m2.values);
-	std::swap(m1.n, m2.n);
-	std::swap(m1.m, m2.m);
-}
-
-
 Matrix operator-(const Matrix& m)
 {
 	Matrix res = m;
@@ -130,7 +141,6 @@ Matrix operator-(const Matrix& m)
 	}
 	return res;
 }
-
 
 Matrix operator+(const Matrix& m1, const Matrix& m2)
 {
@@ -175,29 +185,6 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
 	return res;
 }
 
-Matrix operator*(const Matrix& m1, const Matrix& m2)
-{
-	// transpose second first for improved cache efficiency
-	Matrix m2T = m2.transpose();
-
-	return mulFirstWithSecondTransposedM(m1, m2T);
-	/*Matrix res{ m1.N(), m2.M() };
-	for (int i = 0; i < res.N(); i++)
-	{
-		for (int j = 0; j < res.M(); j++)
-		{
-			float sum = 0.0f;
-			for (int k = 0; k < m1.M(); k++)
-			{
-				 sum += m1(i, k) * m2T(j, k);
-			}
-			res(i, j) = sum;
-		}
-	}
-
-	return res;*/
-}
-
 Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2)
 {
 	if (m1.M() != m2.M())
@@ -208,6 +195,8 @@ Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2)
 	}
 
 	Matrix res{ m1.N(), m2.N() };
+
+#pragma omp parallel for
 	for (int i = 0; i < res.N(); i++)
 	{
 		for (int j = 0; j < res.M(); j++)
@@ -222,6 +211,14 @@ Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2)
 	}
 
 	return res;
+}
+
+Matrix operator*(const Matrix& m1, const Matrix& m2)
+{
+	// transpose second first for improved cache efficiency
+	Matrix m2T = m2.transpose();
+
+	return mulFirstWithSecondTransposedM(m1, m2T);
 }
 
 Matrix operator==(const Matrix& m1, const Matrix& m2)
@@ -265,8 +262,6 @@ Matrix mulElementWiseM(const Matrix& m1, const Matrix& m2)
 
 	return res;
 }
-
-
 
 
 Matrix operator+(const Matrix& m, float val)
@@ -319,23 +314,6 @@ Matrix operator/(const Matrix& m, float val)
 	return res;
 }
 
-
-
-
-void printMx(const Matrix& m)
-{
-	std::string prefix = "";
-	for (int i = 0; i < m.N(); i++)
-	{
-		for (int j = 0; j < m.M(); j++)
-		{
-			std::cout << prefix << m(i, j);
-			prefix = " ";
-		}
-		std::cout << "\n";
-		prefix = "";
-	}
-}
 
 Matrix sigmoidM(const Matrix& m)
 {
@@ -437,7 +415,7 @@ Matrix unrollAllM(const std::vector<Matrix>& matrices)
 	int count = 0;
 	for (int i = 0; i < matrices.size(); i++)
 	{
-		count += matrices[i].values.size();
+		count += (int)matrices[i].values.size();
 	}
 	Matrix res{ 1, count };
 	res.values.clear();
@@ -490,7 +468,7 @@ Matrix sumByRowsM(const Matrix& m)
 	int w = m.M();
 	for (int i = 0; i < m.N(); i++)
 	{
-		res(i) = std::accumulate(m.values.cbegin() + i * w , m.values.cbegin() + (i + 1) * w, 0.0f, std::plus<float>());
+		res(i) = std::accumulate(m.values.cbegin() + i * w, m.values.cbegin() + (i + 1) * w, 0.0f, std::plus<float>());
 	}
 	return res;
 }
@@ -500,24 +478,14 @@ float sumAllM(const Matrix& m)
 	return std::accumulate(m.values.cbegin(), m.values.cend(), 0.0f, std::plus<float>());
 }
 
-
 float meanAllM(const Matrix& m)
 {
 	return sumAllM(m) / (float)(m.N() * m.M());
 }
 
-
-
 float sumSquaredAllM(const Matrix& m)
 {
 	return std::inner_product(m.values.cbegin(), m.values.cend(), m.values.cbegin(), 0.0f);
-}
-
-
-float standardDevM(const Matrix& m)
-{
-	float mean = meanAllM(m);
-	return standardDevM(m, mean);
 }
 
 float standardDevM(const Matrix& m, float mean)
@@ -531,16 +499,22 @@ float standardDevM(const Matrix& m, float mean)
 	std::transform(v.cbegin(), v.cend(), diff.begin(), [mean](float x) { return x - mean; });
 
 	float sq_sum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0f);
-	
+
 	float stdev = sqrtf(sq_sum / (v.size() - 1.0f));
 
 	return stdev;
 }
 
+float standardDevM(const Matrix& m)
+{
+	float mean = meanAllM(m);
+	return standardDevM(m, mean);
+}
+
 Matrix normalizeM(const Matrix& m, float& mean, float& stdev)
 {
 	Matrix res = m;
-	
+
 	mean = meanAllM(m);
 	stdev = standardDevM(m, mean);
 

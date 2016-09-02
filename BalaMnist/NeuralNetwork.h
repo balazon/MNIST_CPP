@@ -18,7 +18,7 @@ class NeuralNetwork
 	int outputSize;
 
 public:
-	NeuralNetwork(int inputSize, float lambda);
+	NeuralNetwork(int inputSize);
 
 	void addSimpleLayer(int nodeSize);
 	
@@ -26,11 +26,11 @@ public:
 	void initWeights();
 	
 
-	void trainComplete(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize);
+	void trainComplete(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize, std::vector<float> lambdas, float alpha, int optIter);
 
-	void trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize, float lambda);
+	void trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, const Matrix& Xval, const Matrix& yval, int epochs, int batchSize, float lambda, float alpha, int optIter);
 
-	void trainStep(const Matrix& Xtrain, const Matrix& ytrain, float lambda);
+	void trainStep(const Matrix& Xtrain, const Matrix& ytrain, float lambda, float alpha, int optIter);
 
 	void validate() {}
 
@@ -44,9 +44,9 @@ public:
 
 	Matrix getUnrolledThetas(int thetaCount = -1);
 
-	
-
 	LayerStructure getLayerStructure();
+
+	void setThetas(const std::vector<Matrix>& unrolled);
 };
 
 class SimpleHiddenLayer

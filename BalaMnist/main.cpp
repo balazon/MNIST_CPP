@@ -81,7 +81,7 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 	{
 		shuffleIndexes.push_back(i);
 	}
-	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned int seed = (unsigned int)(std::chrono::system_clock::now().time_since_epoch().count());
 	std::shuffle(shuffleIndexes.begin(), shuffleIndexes.end(), std::default_random_engine(seed));
 
 	for (int k = 0; k < M; k++)
@@ -313,6 +313,76 @@ void testMath()
 	printf("mean: %.2f\nstdev: %.2f\n", meanAllM(stats), standardDevM(stats));
 }
 
+void testMxMul()
+{
+	std::default_random_engine generator;
+
+	std::uniform_real_distribution<float> distribution{ -100.0f, 100.0f };
+
+	Matrix A{ 1000, 1000 };
+	Matrix B{ 1000, 1000 };
+
+	for (int i = 0; i < A.N() * A.M(); i++)
+	{
+		A(i) = distribution(generator);
+	}
+	for (int i = 0; i < B.N() * B.M(); i++)
+	{
+		B(i) = distribution(generator);
+	}
+
+
+	printf("multest A * B\n");
+	auto start = std::chrono::high_resolution_clock::now();
+	
+	Matrix C = A * B;
+
+	auto elapsed = std::chrono::high_resolution_clock::now() - start;
+	long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+
+	printf("Took: %lld millis\n", microseconds / 1000);
+}
+
+void neural()
+{
+	printf("Loading data..\n");
+	loadData();
+	printf("Loading data finished.\n");
+
+	printf("Normalizing data\n");
+	normalizeData();
+
+	printf("Adding bias\n");
+	addBiasToData();
+
+	printf("Creating NN\n");
+	NeuralNetwork nn{ Xtrain.M() };
+
+	nn.addSimpleLayer(25);
+
+	nn.addSimpleLayer(25);
+
+	nn.addSimpleLayer(10);
+
+
+	printf("NN train \n");
+	std::vector<float> lambdas = { 0, 0.0001f, 0.0003f, 0.001f, 0.003f, 0.01f };
+	int epochs = 3;
+	int batchSize = 1000;
+	float learningRate = 0.1f;
+	int gradIter = 200;
+
+	printf("Estimated time to complete : %.0f times (batch training time)\n", lambdas.size() * epochs * ((float)Xtrain.N() / batchSize));
+	nn.trainComplete(Xtrain, ytrain, Xval, yval, epochs, batchSize, lambdas, learningRate, gradIter);
+
+	
+
+
+	printf("NN predict\n");
+	Matrix p = nn.predict(Xtest);
+
+	printf("Test accuracy: %f\n", meanAllM(p == ytest));
+}
 
 int main()
 {
@@ -320,36 +390,9 @@ int main()
 
 	//testMath();
 
-
-	printf("Loading data..\n");
-	loadData();
-	printf("Loading data finished.\n");
-
-	printf("Normalizing data\n");
-	normalizeData();
+	//testMxMul();
 	
-	printf("Adding bias\n");
-	addBiasToData();
+	neural();
 
-	printf("Creating NN\n");
-	NeuralNetwork nn{ Xtrain.M(), 1.0f };
-
-	nn.addSimpleLayer(25);
-
-	nn.addSimpleLayer(10);
-
-
-	printf("NN train (gradient descent)\n");
-	nn.trainComplete(Xtrain, ytrain, Xval, yval, 1, 100);
-
-	printf("NN predict\n");
-	Matrix p = nn.predict(Xtest);
-
-	printf("Training accuracy: %f\n", meanAllM(p == ytest));
-
-
-	
-	
-	
 	return 0;
 }

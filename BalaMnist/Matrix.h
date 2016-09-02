@@ -2,6 +2,7 @@
 
 #include <vector>
 
+
 class Matrix
 {
 	
@@ -27,6 +28,7 @@ public:
 	float operator()(int i) const;
 
 	float& operator()(int i, int j);
+
 	float operator()(int i, int j) const;
 
 	int N() const;
@@ -40,9 +42,13 @@ public:
 	
 };
 
-
 void swap(Matrix& m1, Matrix& m2);
 
+
+
+
+
+void printMx(const Matrix& m);
 
 Matrix operator-(const Matrix& m);
 
@@ -50,9 +56,9 @@ Matrix operator+(const Matrix& m1, const Matrix& m2);
 
 Matrix operator-(const Matrix& m1, const Matrix& m2);
 
-Matrix operator*(const Matrix& m1, const Matrix& m2);
-
 Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2);
+
+Matrix operator*(const Matrix& m1, const Matrix& m2);
 
 Matrix operator==(const Matrix& m1, const Matrix& m2);
 
@@ -67,10 +73,6 @@ Matrix operator*(const Matrix& m, float val);
 
 Matrix operator/(const Matrix& m, float val);
 
-
-
-
-void printMx(const Matrix& m);
 
 Matrix sigmoidM(const Matrix& m);
 
@@ -105,9 +107,8 @@ float meanAllM(const Matrix& m);
 
 float sumSquaredAllM(const Matrix& m);
 
+float standardDevM(const Matrix& m, float mean);
 
 float standardDevM(const Matrix& m);
-
-float standardDevM(const Matrix& m, float mean);
 
 Matrix normalizeM(const Matrix& m, float& mean, float& stdev);
