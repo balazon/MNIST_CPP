@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-
+#include <iostream>
 
 class Matrix
 {
@@ -46,7 +46,7 @@ void swap(Matrix& m1, Matrix& m2);
 
 
 
-
+std::ostream& operator<<(std::ostream& stream, const Matrix& m);
 
 void printMx(const Matrix& m);
 

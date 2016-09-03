@@ -7,6 +7,8 @@
 #include <functional>
 #include <string>
 #include <numeric>
+#include <fstream>
+
 #define EPS 1e-6
 
 Matrix::Matrix() : Matrix(1, 1) {}
@@ -52,21 +54,25 @@ void swap(Matrix& m1, Matrix& m2)
 }
 
 
-
-
-void printMx(const Matrix& m)
+std::ostream& operator<<(std::ostream& stream, const Matrix& m)
 {
 	std::string prefix = "";
 	for (int i = 0; i < m.N(); i++)
 	{
 		for (int j = 0; j < m.M(); j++)
 		{
-			std::cout << prefix << m(i, j);
-			prefix = " ";
+			stream << prefix << m(i, j);
+			prefix = ", ";
 		}
-		std::cout << "\n";
+		stream << std::endl;
 		prefix = "";
 	}
+	return stream;
+}
+
+void printMx(const Matrix& m)
+{
+	std::cout << m;
 }
 
 

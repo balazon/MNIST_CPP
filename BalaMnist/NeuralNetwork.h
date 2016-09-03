@@ -72,6 +72,8 @@ public:
 	Matrix getUnrolledThetas();
 
 	void setThetas(const std::vector<Matrix>& unrolled);
+
+	void saveThetas(std::ostream& stream);
 };
 
 class SimpleHiddenLayer

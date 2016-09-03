@@ -339,3 +339,12 @@ void NeuralNetwork::setThetas(const std::vector<Matrix>& unrolled)
 		layers[i]->Theta = unrolled[i];
 	}
 }
+
+void NeuralNetwork::saveThetas(std::ostream& stream)
+{
+	for (int i = 0; i < layers.size(); i++)
+	{
+		stream << layers[i]->Theta;
+		stream << std::endl;
+	}
+}

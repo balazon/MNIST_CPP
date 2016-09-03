@@ -67,7 +67,7 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 	imageFile.read((char*)pixels, M * rows * columns);
 	X = Matrix(M, rows * columns);
 	
-	
+	// data rows are shuffled (this is useful when data is ordered)
 	shuffleIndexes.clear();
 	shuffleIndexes.reserve(M);
 	for (int i = 0; i < M; i++)
@@ -333,6 +333,20 @@ void testMxMul()
 	printf("Took: %llu millis\n", Timer::Instance().endMillisElapsed());
 }
 
+void testFileWriting()
+{
+	std::ofstream myfile;
+	myfile.open("example.txt");
+	//myfile << "Writing this to a file.\n";
+
+
+	Matrix m{ 3,3 };
+
+	myfile << m;
+
+	myfile.close();
+}
+
 void neural()
 {
 	printf("Loading data..\n");
@@ -348,7 +362,8 @@ void neural()
 	printf("Creating NN\n");
 	NeuralNetwork nn{ Xtrain.M() };
 
-	
+	//Set custom parameters here
+
 	// to use tanh as activation, use addSimpleLayer(nodeSize, tanhM, tanhGradientM)
 	nn.addSimpleLayer(200);
 
@@ -361,16 +376,19 @@ void neural()
 
 
 	printf("NN train \n");
-	std::vector<float> lambdas = { 0.0f};
+	std::vector<float> lambdas = { 0.0f, 0.01f, 0.03f, 0.1f, 0.3f, 1.0f, 3.0f, 10.0f};
 	int epochs = 1;
 	int batchSize = 1000;
-	float learningRate = 1.0f;
-	int gradIter = 100;
+	float learningRate = 0.3f;
+	int gradIter = 200;
 
 	nn.trainComplete(Xtrain, ytrain, Xval, yval, epochs, batchSize, lambdas, learningRate, gradIter);
 
 	
-
+	std::ofstream myfile;
+	myfile.open("weights.txt");
+	nn.saveThetas(myfile);
+	myfile.close();
 
 	printf("NN predict\n");
 	Matrix p = nn.predict(Xtest);
@@ -378,8 +396,12 @@ void neural()
 	printf("Test accuracy: %f\n", meanAllM(p == ytest));
 }
 
+
+
 int main()
 {
+	//testFileWriting();
+
 	//testGradientDescent();
 
 	//testMath();
