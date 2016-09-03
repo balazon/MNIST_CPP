@@ -4,15 +4,14 @@
 #include <intrin.h>
 #include <numeric>
 #include <algorithm>
-#include <chrono>
 #include <random>
 
 #include "NeuralNetwork.h"
-
 #include "Matrix.h"
-
 #include "GradientDescent.h"
+#include "Timer.h"
 
+//on intel processors this must be defined so that the little endian data gets swapped
 #define HIGH_ENDIAN
 
 
@@ -33,10 +32,7 @@ void readInt(std::ifstream& file, int* dest)
 	*dest = val;
 }
 
-
-
-int K = 10;
-
+//data variables
 Matrix Xtrain;
 Matrix ytrain;
 
@@ -45,9 +41,6 @@ Matrix yval;
 
 Matrix Xtest;
 Matrix ytest;
-
-
-
 
 void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 {
@@ -129,7 +122,7 @@ void loadLabels(const char* path, Matrix& y, std::vector<int>& shuffleIndexes)
 
 
 
-//to training + cross validation
+//splits to training + cross validation
 void splitTrainingData(float trainRatio, const Matrix& X, const Matrix& y, Matrix& Xtrain, Matrix& ytrain, Matrix& Xval, Matrix& yval)
 {
 	int m = X.N();
@@ -151,13 +144,12 @@ void loadData()
 	Matrix X;
 	Matrix y;
 
+	//to shuffle data that is read, the same shuffle must be used for labels
 	std::vector<int> shuffleIndexes;
 
 	printf("  Loading train images..\n");
 	loadImages("Data\\train-images.idx3-ubyte", X, shuffleIndexes);
 	
-	
-
 	printf("  Loading train labels..\n");
 	loadLabels("Data\\train-labels.idx1-ubyte", y, shuffleIndexes);
 	
@@ -165,16 +157,11 @@ void loadData()
 	splitTrainingData(0.75, X, y, Xtrain, ytrain, Xval, yval);
 
 	
-
 	printf("  Loading test images..\n");
 	loadImages("Data\\t10k-images.idx3-ubyte", Xtest, shuffleIndexes);
-	int testCount = Xtest.N() / 100;
-	//Xtest = rangeM(Xtest, 0, 0, Xtest.M(), testCount);
 	
-
 	printf("  Loading test labels..\n");
 	loadLabels("Data\\t10k-labels.idx1-ubyte", ytest, shuffleIndexes);
-	//ytest = rangeM(ytest, 0, 0, ytest.M(), testCount);
 }
 
 void normalizeData()
@@ -199,17 +186,20 @@ void addBiasToData()
 	Xval = appendNextToM(onesM(Xval.N(), 1), Xval);
 
 	Xtest = appendNextToM(onesM(Xtest.N(), 1), Xtest);
-
 }
 
 void testGradientDescent()
 {
+	// f(x) = (x - 4)^2, x0 = 5.5
+	// f'(x) = 2x - 8
 	std::vector<float> x = { 5.5f };
 	auto cost = [](const std::vector<float>& theta, std::vector<float>& grad) {
 		grad[0] = 2.f * theta[0] - 8.f;
 		return (theta[0] - 4.f) * (theta[0] - 4.f);
 	};
 	gradientDescent(cost, x, 0.1f, 100);
+
+	//result should be close to 4.0f
 	printf("gradient descent result: %.2f", x[0]);
 }
 
@@ -315,6 +305,8 @@ void testMath()
 
 void testMxMul()
 {
+	//multiplying big randomized matrices
+
 	std::default_random_engine generator;
 
 	std::uniform_real_distribution<float> distribution{ -100.0f, 100.0f };
@@ -333,14 +325,12 @@ void testMxMul()
 
 
 	printf("multest A * B\n");
-	auto start = std::chrono::high_resolution_clock::now();
+
+	Timer::Instance().start();
 	
 	Matrix C = A * B;
 
-	auto elapsed = std::chrono::high_resolution_clock::now() - start;
-	long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
-
-	printf("Took: %lld millis\n", microseconds / 1000);
+	printf("Took: %llu millis\n", Timer::Instance().endMillisElapsed());
 }
 
 void neural()
@@ -358,21 +348,25 @@ void neural()
 	printf("Creating NN\n");
 	NeuralNetwork nn{ Xtrain.M() };
 
-	nn.addSimpleLayer(25);
+	
+	// to use tanh as activation, use addSimpleLayer(nodeSize, tanhM, tanhGradientM)
+	nn.addSimpleLayer(200);
 
-	nn.addSimpleLayer(25);
+	nn.addSimpleLayer(50);
 
+	//last layer is the output layer
+	// - don't use tanhM as activation on the last layer
+	// (tanh may evaluate to negative numbers, cost function will use log on them : NaN)
 	nn.addSimpleLayer(10);
 
 
 	printf("NN train \n");
-	std::vector<float> lambdas = { 0, 0.0001f, 0.0003f, 0.001f, 0.003f, 0.01f };
-	int epochs = 3;
+	std::vector<float> lambdas = { 0.0f};
+	int epochs = 1;
 	int batchSize = 1000;
-	float learningRate = 0.1f;
-	int gradIter = 200;
+	float learningRate = 1.0f;
+	int gradIter = 100;
 
-	printf("Estimated time to complete : %.0f times (batch training time)\n", lambdas.size() * epochs * ((float)Xtrain.N() / batchSize));
 	nn.trainComplete(Xtrain, ytrain, Xval, yval, epochs, batchSize, lambdas, learningRate, gradIter);
 
 	

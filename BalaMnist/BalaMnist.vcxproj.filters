@@ -27,11 +27,11 @@
     <ClCompile Include="GradientDescent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImageClassificationData.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Matrix.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -39,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="GradientDescent.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

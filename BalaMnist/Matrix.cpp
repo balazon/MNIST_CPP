@@ -54,8 +54,6 @@ void swap(Matrix& m1, Matrix& m2)
 
 
 
-////////////
-
 void printMx(const Matrix& m)
 {
 	std::string prefix = "";
@@ -332,6 +330,27 @@ Matrix sigmoidGradientM(const Matrix& m)
 	{
 		float sigm = 1.0f / (1.0f + expf(-val));
 		val = sigm * (1.0f - sigm);
+	}
+	return res;
+}
+
+Matrix tanhM(const Matrix& m)
+{
+	Matrix res = m;
+	for (float& val : res.values)
+	{
+		val = tanhf(val);
+	}
+	return res;
+}
+
+Matrix tanhGradientM(const Matrix& m)
+{
+	Matrix res = m;
+	for (float& val : res.values)
+	{
+		float temp = tanhf(val);
+		val = 1.0f - temp * temp;
 	}
 	return res;
 }

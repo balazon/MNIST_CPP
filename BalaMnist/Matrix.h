@@ -78,6 +78,10 @@ Matrix sigmoidM(const Matrix& m);
 
 Matrix sigmoidGradientM(const Matrix& m);
 
+Matrix tanhM(const Matrix& m);
+
+Matrix tanhGradientM(const Matrix& m);
+
 Matrix logM(const Matrix& m);
 
 //cuts out a part of a Matrix into a new Matrix
