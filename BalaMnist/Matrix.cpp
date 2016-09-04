@@ -18,9 +18,11 @@ Matrix::Matrix(int n, int m, float defVal) : n{ n }, m{ m }, values((size_t)(n *
 }
 
 
-
-Matrix::Matrix(int n, int m, std::vector<float>::const_iterator first, std::vector<float>::const_iterator last,
-	const std::vector<float>::allocator_type& alloc) : n{ n }, m{ m }, values{first, last, alloc}
+Matrix::Matrix(int n, int m,
+	std::vector<float>::const_iterator first,
+	std::vector<float>::const_iterator last,
+	const std::vector<float>::allocator_type& alloc)
+	: n{ n }, m{ m }, values{first, last, alloc}
 {
 	values = std::vector<float>(first, last, alloc);
 	values.resize((size_t)n * m, 0.0f);
@@ -29,6 +31,7 @@ Matrix::Matrix(int n, int m, std::vector<float>::const_iterator first, std::vect
 Matrix& Matrix::operator=(Matrix other)
 {
 	swap(*this, other);
+
 	return *this;
 }
 
@@ -57,6 +60,7 @@ void swap(Matrix& m1, Matrix& m2)
 std::ostream& operator<<(std::ostream& stream, const Matrix& m)
 {
 	std::string prefix = "";
+
 	for (int i = 0; i < m.N(); i++)
 	{
 		for (int j = 0; j < m.M(); j++)
@@ -67,6 +71,7 @@ std::ostream& operator<<(std::ostream& stream, const Matrix& m)
 		stream << std::endl;
 		prefix = "";
 	}
+
 	return stream;
 }
 
@@ -79,6 +84,7 @@ void printMx(const Matrix& m)
 void visualizeLayerM(std::ostream& stream, const Matrix& mat, int rows, int cols, int miniRows, int miniCols)
 {
 	std::string prefix = "";
+
 	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < miniRows; j++)
@@ -92,6 +98,7 @@ void visualizeLayerM(std::ostream& stream, const Matrix& mat, int rows, int cols
 					prefix = ", ";
 				}
 			}
+
 			prefix = "";
 			stream << std::endl;
 		}
@@ -104,6 +111,7 @@ float& Matrix::operator()(int i)
 	{
 		std::cout << "out of bounds  at Mx (" << i << ")\n";
 	}
+
 	return values[i];
 }
 
@@ -113,6 +121,7 @@ float Matrix::operator()(int i) const
 	{
 		std::cout << "out of bounds  at Mx (" << i << ")\n";
 	}
+
 	return values[i];
 }
 
@@ -122,6 +131,7 @@ float& Matrix::operator()(int i, int j)
 	{
 		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
+
 	return values[i * m + j];
 }
 
@@ -131,6 +141,7 @@ float Matrix::operator()(int i, int j) const
 	{
 		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
+
 	return values[i * m + j];
 }
 
@@ -147,6 +158,7 @@ int Matrix::M() const
 Matrix Matrix::transpose() const
 {
 	Matrix res{ m, n };
+
 	for (int i = 0; i < m; i++)
 	{
 		for (int j = 0; j < n; j++)
@@ -154,6 +166,7 @@ Matrix Matrix::transpose() const
 			res(i, j) = this->operator()(j, i);
 		}
 	}
+
 	return res;
 }
 
@@ -165,6 +178,7 @@ Matrix operator-(const Matrix& m)
 	{
 		res(i) = -res(i);
 	}
+
 	return res;
 }
 
@@ -179,6 +193,7 @@ Matrix operator+(const Matrix& m1, const Matrix& m2)
 
 
 	Matrix res{ m1.N(), m1.M() };
+
 	for (int i = 0; i < m1.N(); i++)
 	{
 		for (int j = 0; j < m1.M(); j++)
@@ -200,6 +215,7 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
 	}
 
 	Matrix res{ m1.N(), m1.M() };
+
 	for (int i = 0; i < m1.N(); i++)
 	{
 		for (int j = 0; j < m1.M(); j++)
@@ -257,6 +273,7 @@ Matrix operator==(const Matrix& m1, const Matrix& m2)
 	}
 
 	Matrix res{ m1.N(), m1.M() };
+
 	for (int i = 0; i < m1.N(); i++)
 	{
 		for (int j = 0; j < m1.M(); j++)
@@ -278,6 +295,7 @@ Matrix mulElementWiseM(const Matrix& m1, const Matrix& m2)
 	}
 
 	Matrix res{ m1.N(), m1.M() };
+
 	for (int i = 0; i < m1.N(); i++)
 	{
 		for (int j = 0; j < m1.M(); j++)
@@ -298,6 +316,7 @@ Matrix operator+(const Matrix& m, float val)
 	{
 		res(i) = m(i) + val;
 	}
+
 	return res;
 }
 
@@ -309,6 +328,7 @@ Matrix operator-(const Matrix& m, float val)
 	{
 		res(i) = m(i) - val;
 	}
+
 	return res;
 }
 
@@ -320,6 +340,7 @@ Matrix operator*(const Matrix& m, float val)
 	{
 		res(i) = m(i) * val;
 	}
+
 	return res;
 }
 
@@ -331,12 +352,14 @@ Matrix operator/(const Matrix& m, float val)
 		std::cout << "error\n";
 		return Matrix();
 	}
+
 	Matrix res = m;
 
 	for (int i = 0; i < m.N() * m.M(); i++)
 	{
 		res(i) = m(i) / val;
 	}
+
 	return res;
 }
 
@@ -344,52 +367,62 @@ Matrix operator/(const Matrix& m, float val)
 Matrix sigmoidM(const Matrix& m)
 {
 	Matrix res = m;
+
 	for (float& val : res.values)
 	{
 		val = 1.0f / (1.0f + expf(-val));
 	}
+
 	return res;
 }
 
 Matrix sigmoidGradientM(const Matrix& m)
 {
 	Matrix res = m;
+
 	for (float& val : res.values)
 	{
 		float sigm = 1.0f / (1.0f + expf(-val));
 		val = sigm * (1.0f - sigm);
 	}
+
 	return res;
 }
 
 Matrix tanhM(const Matrix& m)
 {
 	Matrix res = m;
+
 	for (float& val : res.values)
 	{
 		val = tanhf(val);
 	}
+
 	return res;
 }
 
 Matrix tanhGradientM(const Matrix& m)
 {
 	Matrix res = m;
+
 	for (float& val : res.values)
 	{
 		float temp = tanhf(val);
 		val = 1.0f - temp * temp;
 	}
+
 	return res;
 }
 
 Matrix logM(const Matrix& m)
 {
 	Matrix res = m;
+
 	for (float& val : res.values)
 	{
 		val = logf(val);
 	}
+
 	return res;
 }
 
@@ -397,6 +430,7 @@ Matrix logM(const Matrix& m)
 Matrix rangeM(const Matrix& m, int i, int j, int w, int h)
 {
 	Matrix res(h, w);
+
 	for (int k = 0; k < h; k++)
 	{
 		for (int l = 0; l < w; l++)
@@ -404,6 +438,7 @@ Matrix rangeM(const Matrix& m, int i, int j, int w, int h)
 			res(k, l) = m(k + i, l + j);
 		}
 	}
+
 	return res;
 }
 
@@ -415,6 +450,7 @@ Matrix appendBelowM(const Matrix& m1, const Matrix& m2)
 		std::cout << "error\n";
 		return Matrix();
 	}
+
 	Matrix res(m1.N() + m2.N(), m1.M());
 
 	res.values.clear();
@@ -443,9 +479,12 @@ Matrix appendNextToM(const Matrix& m1, const Matrix& m2)
 		std::cout << "error\n";
 		return Matrix();
 	}
+
 	Matrix res{ m1.N(), m1.M() + m2.M() };
+
 	copyMatInM(m1, res, 0, 0);
 	copyMatInM(m2, res, 0, m1.M());
+
 	return res;
 }
 
@@ -454,16 +493,19 @@ Matrix reshapeM(const Matrix& thetas, int startIndex, int n, int m)
 	Matrix res{ n, m };
 	res.values.clear();
 	res.values.insert(res.values.end(), thetas.values.cbegin() + startIndex, thetas.values.cbegin() + startIndex + n * m);
+
 	return res;
 }
 
 Matrix unrollAllM(const std::vector<Matrix>& matrices)
 {
 	int count = 0;
+
 	for (int i = 0; i < matrices.size(); i++)
 	{
 		count += (int)matrices[i].values.size();
 	}
+
 	Matrix res{ 1, count };
 	res.values.clear();
 
@@ -513,10 +555,12 @@ Matrix sumByRowsM(const Matrix& m)
 {
 	Matrix res{ m.N(), 1 };
 	int w = m.M();
+
 	for (int i = 0; i < m.N(); i++)
 	{
 		res(i) = std::accumulate(m.values.cbegin() + i * w, m.values.cbegin() + (i + 1) * w, 0.0f, std::plus<float>());
 	}
+
 	return res;
 }
 
@@ -541,6 +585,7 @@ float standardDevM(const Matrix& m, float mean)
 	{
 		return 0.0f;
 	}
+
 	const std::vector<float>& v = m.values;
 	std::vector<float> diff(v.size());
 	std::transform(v.cbegin(), v.cend(), diff.begin(), [mean](float x) { return x - mean; });
@@ -555,6 +600,7 @@ float standardDevM(const Matrix& m, float mean)
 float standardDevM(const Matrix& m)
 {
 	float mean = meanAllM(m);
+
 	return standardDevM(m, mean);
 }
 

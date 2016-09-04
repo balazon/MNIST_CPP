@@ -20,5 +20,6 @@ unsigned long long Timer::endMillisElapsed()
 Timer& Timer::Instance()
 {
 	static Timer timerInstance;
+
 	return timerInstance;
 }

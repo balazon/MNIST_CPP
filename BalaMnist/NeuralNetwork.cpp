@@ -18,6 +18,7 @@ void NeuralNetwork::addSimpleLayer(int nodeSize,
 {
 	int w = layers.size() == 0 ? inputSize : layers.back()->Theta.N() + 1;
 	layers.push_back(std::make_shared<SimpleHiddenLayer>(nodeSize, w, actFun, actFunGrad));
+
 	outputSize = nodeSize;
 
 	updateLayerStructure();
@@ -30,10 +31,12 @@ void NeuralNetwork::initWeights()
 	for (int i = 0; i < layers.size(); i++)
 	{
 		Matrix& Theta = layers[i]->Theta;
+
 		int size = Theta.N() * Theta.M();
 		float eps = 2.45f / sqrtf((float)size);
 
 		std::uniform_real_distribution<float> distribution{ -eps, eps };
+
 		for (int j = 0; j < size; j++)
 		{
 			Theta(j) = distribution(generator);
@@ -67,6 +70,7 @@ void NeuralNetwork::trainComplete(const Matrix& Xtrain, const Matrix& ytrain, co
 		
 		Matrix thetasUnrolled = getUnrolledThetas();
 		Matrix grad;
+
 		float trainJ = costFunction(thetasUnrolled, currentLayerStructure, outputSize, Xtrain, ytrain, 0.0f, grad);
 		float crossJ = costFunction(thetasUnrolled, currentLayerStructure, outputSize, Xval, yval, 0.0f, grad);
 
@@ -87,7 +91,9 @@ void NeuralNetwork::trainComplete(const Matrix& Xtrain, const Matrix& ytrain, co
 	std::vector<Matrix> reshapedThetas = getReshaped(bestThetas, currentLayerStructure);
 	setThetas(reshapedThetas);
 
+
 	printf("\nCross validation results: \n");
+
 	for (int i = 0; i < lambdas.size(); i++)
 	{
 		printf("  Lambda = %.4f train cost: %.4f, cross cost: %.4f\n", lambdas[i], trainCosts[i], crossCosts[i]);
@@ -113,10 +119,13 @@ void NeuralNetwork::trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, 
 			batchIterations++;
 		}
 
+
 		int currentPosition = 0;
+
 		for (int j = 0; j < batchIterations; j++)
 		{
 			printf("Epoch %d batch %d \n", (i + 1), (j + 1));
+
 			int currentBatchSize = (currentPosition + batchSize <= m) ? batchSize : (m - currentPosition);
 
 			Matrix X = rangeM(Xtrain, currentPosition, 0, Xtrain.M(), currentBatchSize);
@@ -141,7 +150,6 @@ void NeuralNetwork::trainWithLambda(const Matrix& Xtrain, const Matrix& ytrain, 
 				firstBatchGrad = false;
 			}
 			
-
 			currentPosition += currentBatchSize;
 		}
 
@@ -171,6 +179,7 @@ float NeuralNetwork::costFunction(const Matrix& thetasUnrolled, const LayerStruc
 {
 
 	std::vector<Matrix> thetas = getReshaped(thetasUnrolled, layerStructure);
+
 	const std::vector<std::function<Matrix(const Matrix&)>>& actFuns = layerStructure.actFuns;
 	const std::vector<std::function<Matrix(const Matrix&)>>& actFunGrads = layerStructure.actFunGrads;
 
@@ -197,6 +206,7 @@ float NeuralNetwork::costFunction(const Matrix& thetasUnrolled, const LayerStruc
 		const Matrix& Theta = thetas[i];
 
 		Matrix z = mulFirstWithSecondTransposedM(a, Theta);
+
 		if (i != thetas.size() - 1)
 		{
 			a = appendNextToM(onesM(m, 1), actFuns[i](z));
@@ -212,6 +222,7 @@ float NeuralNetwork::costFunction(const Matrix& thetasUnrolled, const LayerStruc
 		Matrix bias = rangeM(Theta, 0, 0, 1, Theta.N());
 		reg += sumSquaredAllM(Theta) - sumSquaredAllM(bias);
 	}
+
 	reg *= lambda * 0.5f / m;
 
 	
@@ -226,9 +237,12 @@ float NeuralNetwork::costFunction(const Matrix& thetasUnrolled, const LayerStruc
 	for (int i = (int)thetas.size() - 2; i >= 0; i--)
 	{
 		const Matrix& Theta = thetas[i + 1];
+
 		Matrix biasClearedTheta = Theta;
 		copyMatInM(zeros(biasClearedTheta.N(), 1), biasClearedTheta, 0, 0);
+
 		Matrix cutTheta = rangeM(Theta, 0, 1, Theta.M() - 1, Theta.N());
+
 
 		gradThetas[i + 1] = (delta.transpose() * act[i]) * (1.0f / (float)m) + biasClearedTheta * (lambda / (float)m);
 		delta = mulElementWiseM(delta * cutTheta, actFunGrads[i](zed[i]));
@@ -266,13 +280,13 @@ Matrix NeuralNetwork::hypothesis(const Matrix& X)
 		);
 
 	}
+
 	return a;
 }
 
 
 Matrix NeuralNetwork::predict(const Matrix& X)
 {
-	
 	Matrix h = hypothesis(X);
 	
 	return maxIndexByRowsM(h);
@@ -284,11 +298,13 @@ std::vector<Matrix> NeuralNetwork::getReshaped(const Matrix& unrolled, const Lay
 	std::vector<Matrix> thetas;
 	int startIndex = 0;
 	const std::vector<int>& dim = layerStructure.thetaDimensions;
+
 	for (int i = 0; i < dim.size(); i += 2)
 	{
 		int n = dim[i];
 		int m = dim[i + 1];
 		thetas.push_back(reshapeM(unrolled, startIndex, n, m));
+
 		startIndex += n * m;
 	}
 
@@ -329,6 +345,7 @@ void NeuralNetwork::updateLayerStructure()
 		actFuns.push_back(layers[i]->actFun);
 		actFunGrads.push_back(layers[i]->actFunGrad);
 	}
+
 	currentLayerStructure = LayerStructure{ thetaDims, thetaCount, actFuns, actFunGrads};
 }
 
