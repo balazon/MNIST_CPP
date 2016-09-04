@@ -26,9 +26,11 @@ void readInt(std::ifstream& file, int* dest)
 {
 	int val = 0;
 	file.read((char*)&val, sizeof(val));
+
 #ifdef HIGH_ENDIAN
 	val = swapEndian(val);
 #endif
+
 	*dest = val;
 }
 
@@ -45,6 +47,7 @@ Matrix ytest;
 void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 {
 	std::ifstream imageFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
+
 	if (!imageFile.is_open())
 	{
 		return;
@@ -70,12 +73,15 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 	// data rows are shuffled (this is useful when data is ordered)
 	shuffleIndexes.clear();
 	shuffleIndexes.reserve(M);
+
 	for (int i = 0; i < M; i++)
 	{
 		shuffleIndexes.push_back(i);
 	}
+
 	unsigned int seed = (unsigned int)(std::chrono::system_clock::now().time_since_epoch().count());
 	std::shuffle(shuffleIndexes.begin(), shuffleIndexes.end(), std::default_random_engine(seed));
+
 
 	for (int k = 0; k < M; k++)
 	{
@@ -94,6 +100,7 @@ void loadImages(const char* path, Matrix& X, std::vector<int>& shuffleIndexes)
 void loadLabels(const char* path, Matrix& y, std::vector<int>& shuffleIndexes)
 {
 	std::ifstream labelFile{ path, std::ios::in | std::ios::binary | std::ios::ate };
+
 	if (!labelFile.is_open())
 	{
 		return;
@@ -168,6 +175,7 @@ void normalizeData()
 {
 	float mean = 0.0f;
 	float stdev = 0.0f;
+
 	Xtrain = normalizeM(Xtrain, mean, stdev);
 	
 
@@ -192,11 +200,14 @@ void testGradientDescent()
 {
 	// f(x) = (x - 4)^2, x0 = 5.5
 	// f'(x) = 2x - 8
+
 	std::vector<float> x = { 5.5f };
+
 	auto cost = [](const std::vector<float>& theta, std::vector<float>& grad) {
 		grad[0] = 2.f * theta[0] - 8.f;
 		return (theta[0] - 4.f) * (theta[0] - 4.f);
 	};
+
 	gradientDescent(cost, x, 0.1f, 100);
 
 	//result should be close to 4.0f
@@ -283,11 +294,15 @@ void testMath()
 	h(7) = 4;
 	h(8) = 1;
 	h(9) = 1;
+
 	printMx(g);
 	std::cout << "\n";
+
 	printMx(h);
 	std::cout << "\n";
+
 	printMx(g == h);
+
 	std::cout << "\n" << meanAllM(g == h) << "\n";
 
 	
@@ -300,6 +315,7 @@ void testMath()
 
 	printMx(stats);
 	std::cout << "\n";
+
 	printf("mean: %.2f\nstdev: %.2f\n", meanAllM(stats), standardDevM(stats));
 }
 
@@ -318,6 +334,7 @@ void testMxMul()
 	{
 		A(i) = distribution(generator);
 	}
+
 	for (int i = 0; i < B.N() * B.M(); i++)
 	{
 		B(i) = distribution(generator);
@@ -337,8 +354,6 @@ void testFileWriting()
 {
 	std::ofstream myfile;
 	myfile.open("example.txt");
-	//myfile << "Writing this to a file.\n";
-
 
 	Matrix m{ 3,3 };
 
@@ -351,22 +366,32 @@ void testFileWriting()
 void neural()
 {
 	printf("Loading data..\n");
+
 	// You may need to customize this function and the other functions called from here
-	// if you intent to use it for some other data
+	// if you intend to use it for some other data
 	loadData();
+
 	printf("Loading data finished.\n");
 
+
 	printf("Normalizing data\n");
+
 	normalizeData();
 
+
 	printf("Adding bias\n");
+
 	// This is important, the NN assumes the data already has the bias as the first column
 	addBiasToData();
 
+
 	printf("Creating NN\n");
+
 	NeuralNetwork nn{ Xtrain.M() };
 
-	//Set custom parameters here
+
+
+	// Set custom parameters here
 
 	// Add a layer using addSimpleLayer function with the number of the nodes specified
 	// To use tanh as activation, use addSimpleLayer(nodeSize, tanhM, tanhGradientM)
@@ -374,12 +399,14 @@ void neural()
 
 	nn.addSimpleLayer(50);
 
-	//last layer is the output layer - number of nodes should equal the number of labels in the classification data
+	// Last layer is the output layer - number of nodes should equal the number of labels in the classification data
 	// - don't use tanhM as activation on the last layer
 	// (tanh may evaluate to negative numbers, cost function will use log on them : NaN)
 	nn.addSimpleLayer(10);
 
+
 	printf("NN train \n");
+
 	// The list of lambdas (regularization parameters) to try, after training the neural network with each lambda
 	// the NN will choose the one with the least amount of cross validation error
 	std::vector<float> lambdas = { 0.0f, 0.01f, 0.03f, 0.1f, 0.3f, 1.0f, 3.0f, 10.0f };
@@ -393,23 +420,28 @@ void neural()
 
 	std::ofstream myfile;
 	myfile.open("weights.txt");
+
 	// To save layer weights, you can call saveThetas function with an ofstream file object as parameter
 	// The weights will be written out as matrices separated by comma and space, row by row
 	nn.saveThetas(myfile);
 	myfile.close();
 
-	// To save the first layer in an n rows by m columns rearrangement with each neuron's weights as a 2d picture
-	// that can be copied in excel to visualize, use the function saveFirstLayerVisualization
+	
 	std::ofstream file;
 	file.open("firstlayer.txt");
+
+	// To save the first layer in an n rows by m columns rearrangement with each neuron's weights as a 2d picture
+	// that can be copied in excel to visualize, use the function saveFirstLayerVisualization
 	nn.saveFirstLayerVisualization(file, 10, 20, 28, 28);
 	file.close();
 
+
 	printf("NN predict\n");
+
 	// p contains the neural network's predicted labels
 	Matrix p = nn.predict(Xtest);
 
-	//Test accuracy is achieved by comparing the predicted labels to the test labels
+	// Test accuracy is achieved by comparing the predicted labels to the test labels
 	// which is a column matrix with 0's and 1's in it (1 when the prediction matched the test)
 	// and then you take the average from those values using meanAllM
 	printf("Test accuracy: %f\n", meanAllM(p == ytest));
