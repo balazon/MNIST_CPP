@@ -14,7 +14,8 @@ public:
 	Matrix();
 	Matrix(int n, int m, float defVal = 0.0f);
 
-	Matrix(int n, int m,
+	Matrix(
+		int n, int m,
 		std::vector<float>::const_iterator first,
 		std::vector<float>::const_iterator last,
 		const std::vector<float>::allocator_type& alloc = std::vector<float>::allocator_type());

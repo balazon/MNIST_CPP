@@ -107,7 +107,7 @@ void visualizeLayerM(std::ostream& stream, const Matrix& mat, int rows, int cols
 
 float& Matrix::operator()(int i)
 {
-	if (i >= n * m || i < 0)
+	if ((i >= n * m) || (i < 0))
 	{
 		std::cout << "out of bounds  at Mx (" << i << ")\n";
 	}
@@ -117,7 +117,7 @@ float& Matrix::operator()(int i)
 
 float Matrix::operator()(int i) const
 {
-	if (i >= n * m || i < 0)
+	if ((i >= n * m) || (i < 0))
 	{
 		std::cout << "out of bounds  at Mx (" << i << ")\n";
 	}
@@ -127,7 +127,7 @@ float Matrix::operator()(int i) const
 
 float& Matrix::operator()(int i, int j)
 {
-	if (i >= n || j >= m || i < 0 || j < 0)
+	if ((i >= n) || (j >= m) || (i < 0) || (j < 0))
 	{
 		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
@@ -137,7 +137,7 @@ float& Matrix::operator()(int i, int j)
 
 float Matrix::operator()(int i, int j) const
 {
-	if (i >= n || j >= m || i < 0 || j < 0)
+	if ((i >= n) || (j >= m) || (i < 0) || (j < 0))
 	{
 		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
@@ -184,7 +184,7 @@ Matrix operator-(const Matrix& m)
 
 Matrix operator+(const Matrix& m1, const Matrix& m2)
 {
-	if (m1.N() != m2.N() || m1.M() != m2.M())
+	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
 		std::cout << "error\n";
@@ -207,7 +207,7 @@ Matrix operator+(const Matrix& m1, const Matrix& m2)
 
 Matrix operator-(const Matrix& m1, const Matrix& m2)
 {
-	if (m1.N() != m2.N() || m1.M() != m2.M())
+	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
 		std::cout << "error\n";
@@ -265,7 +265,7 @@ Matrix operator*(const Matrix& m1, const Matrix& m2)
 
 Matrix operator==(const Matrix& m1, const Matrix& m2)
 {
-	if (m1.N() != m2.N() || m1.M() != m2.M())
+	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
 		std::cout << "error\n";
@@ -287,7 +287,7 @@ Matrix operator==(const Matrix& m1, const Matrix& m2)
 
 Matrix mulElementWiseM(const Matrix& m1, const Matrix& m2)
 {
-	if (m1.N() != m2.N() || m1.M() != m2.M())
+	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
 		std::cout << "error\n";
@@ -536,6 +536,7 @@ Matrix maxIndexByRowsM(const Matrix& m)
 	{
 		float maxVal = FLT_MIN;
 		int maxIndex = 0;
+
 		for (int j = 0; j < m.M(); j++)
 		{
 			float t = m(i, j);
@@ -545,6 +546,7 @@ Matrix maxIndexByRowsM(const Matrix& m)
 				maxIndex = j;
 			}
 		}
+
 		res(i) = (float)maxIndex;
 	}
 

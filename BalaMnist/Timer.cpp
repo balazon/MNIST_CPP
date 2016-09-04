@@ -3,7 +3,7 @@
 #include "Timer.h"
 
 
-
+Timer Timer::inst = Timer{};
 
 void Timer::start()
 {
@@ -19,7 +19,5 @@ unsigned long long Timer::endMillisElapsed()
 
 Timer& Timer::Instance()
 {
-	static Timer timerInstance;
-
-	return timerInstance;
+	return inst;
 }
