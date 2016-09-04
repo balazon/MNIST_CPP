@@ -76,6 +76,28 @@ void printMx(const Matrix& m)
 }
 
 
+void visualizeLayerM(std::ostream& stream, const Matrix& mat, int rows, int cols, int miniRows, int miniCols)
+{
+	std::string prefix = "";
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < miniRows; j++)
+		{
+			for (int k = 0; k < cols; k++)
+			{
+				for (int l = 0; l < miniCols; l++)
+				{
+					int index = (i * cols + k) * mat.M() + miniCols * j + l + 1;
+					stream << prefix << mat(index);
+					prefix = ", ";
+				}
+			}
+			prefix = "";
+			stream << std::endl;
+		}
+	}
+}
+
 float& Matrix::operator()(int i)
 {
 	if (i >= n * m || i < 0)

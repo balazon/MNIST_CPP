@@ -74,6 +74,8 @@ public:
 	void setThetas(const std::vector<Matrix>& unrolled);
 
 	void saveThetas(std::ostream& stream);
+
+	void saveFirstLayerVisualization(std::ostream& stream, int rows, int cols, int miniRows, int miniCols);
 };
 
 class SimpleHiddenLayer

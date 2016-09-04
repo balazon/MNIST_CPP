@@ -50,6 +50,9 @@ std::ostream& operator<<(std::ostream& stream, const Matrix& m);
 
 void printMx(const Matrix& m);
 
+void visualizeLayerM(std::ostream& stream, const Matrix& mat, int rows, int cols, int miniRows, int miniCols);
+
+
 Matrix operator-(const Matrix& m);
 
 Matrix operator+(const Matrix& m1, const Matrix& m2);

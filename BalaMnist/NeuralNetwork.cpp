@@ -348,3 +348,8 @@ void NeuralNetwork::saveThetas(std::ostream& stream)
 		stream << std::endl;
 	}
 }
+
+void NeuralNetwork::saveFirstLayerVisualization(std::ostream& stream, int rows, int cols, int miniRows, int miniCols)
+{
+	visualizeLayerM(stream, layers[0]->Theta, rows, cols, miniRows, miniCols);
+}
