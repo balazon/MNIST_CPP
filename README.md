@@ -39,7 +39,6 @@ Usage for the MNIST data is the following:
 	// (tanh may evaluate to negative numbers, cost function will use log on them : NaN)
 	nn.addSimpleLayer(10);
 
-
 	printf("NN train \n");
 	// The list of lambdas (regularization parameters) to try, after training the neural network with each lambda
 	// the NN will choose the one with the least amount of cross validation error
@@ -58,6 +57,13 @@ Usage for the MNIST data is the following:
 	// The weights will be written out as matrices separated by comma and space, row by row
 	nn.saveThetas(myfile);
 	myfile.close();
+
+	// To save the first layer in an n rows by m columns rearrangement with each neuron's weights as a 2d picture
+	// that can be copied in excel to visualize, use the function saveFirstLayerVisualization
+	std::ofstream file;
+	file.open("firstlayer.txt");
+	nn.saveFirstLayerVisualization(file, 10, 20, 28, 28);
+	file.close();
 
 	printf("NN predict\n");
 	// p contains the neural network's predicted labels
