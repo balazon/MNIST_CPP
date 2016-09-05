@@ -109,7 +109,7 @@ float& Matrix::operator()(int i)
 {
 	if ((i >= n * m) || (i < 0))
 	{
-		std::cout << "out of bounds  at Mx (" << i << ")\n";
+		std::cout << "Error: out of bounds  at Mx (" << i << ")\n";
 	}
 
 	return values[i];
@@ -119,7 +119,7 @@ float Matrix::operator()(int i) const
 {
 	if ((i >= n * m) || (i < 0))
 	{
-		std::cout << "out of bounds  at Mx (" << i << ")\n";
+		std::cout << "Error: out of bounds  at Mx (" << i << ")\n";
 	}
 
 	return values[i];
@@ -129,7 +129,7 @@ float& Matrix::operator()(int i, int j)
 {
 	if ((i >= n) || (j >= m) || (i < 0) || (j < 0))
 	{
-		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
+		std::cout << "Error: out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
 
 	return values[i * m + j];
@@ -139,7 +139,7 @@ float Matrix::operator()(int i, int j) const
 {
 	if ((i >= n) || (j >= m) || (i < 0) || (j < 0))
 	{
-		std::cout << "out of bounds  at Mx (" << i << ", " << j << ")\n";
+		std::cout << "Error: out of bounds  at Mx (" << i << ", " << j << ")\n";
 	}
 
 	return values[i * m + j];
@@ -187,7 +187,7 @@ Matrix operator+(const Matrix& m1, const Matrix& m2)
 	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -210,7 +210,7 @@ Matrix operator-(const Matrix& m1, const Matrix& m2)
 	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -232,7 +232,7 @@ Matrix mulFirstWithSecondTransposedM(const Matrix& m1, const Matrix& m2)
 	if (m1.M() != m2.M())
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -268,7 +268,7 @@ Matrix operator==(const Matrix& m1, const Matrix& m2)
 	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -290,7 +290,7 @@ Matrix mulElementWiseM(const Matrix& m1, const Matrix& m2)
 	if ((m1.N() != m2.N()) || (m1.M() != m2.M()))
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -349,7 +349,7 @@ Matrix operator/(const Matrix& m, float val)
 	if (fabs(val) < EPS)
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: division by zero\n";
 		return Matrix();
 	}
 
@@ -429,6 +429,12 @@ Matrix logM(const Matrix& m)
 //cuts out a part of a Matrix into a new Matrix
 Matrix rangeM(const Matrix& m, int i, int j, int w, int h)
 {
+	if ( (i + h - 1 >= m.N()) || (j + w - 1  >= m.M()) )
+	{
+		// error..
+		std::cout << "Error: invalid parameters for rangeM\n";
+		return Matrix();
+	}
 	Matrix res(h, w);
 
 	for (int k = 0; k < h; k++)
@@ -447,7 +453,7 @@ Matrix appendBelowM(const Matrix& m1, const Matrix& m2)
 	if (m1.M() != m2.M())
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -462,6 +468,12 @@ Matrix appendBelowM(const Matrix& m1, const Matrix& m2)
 
 void copyMatInM(const Matrix& source, Matrix& dest, int i, int j)
 {
+	if ((i + source.N() - 1 >= dest.N()) || (j + source.M() - 1 >= dest.M()))
+	{
+		// error..
+		std::cout << "Error: invalid parameters for copyMatInM\n";
+		return;
+	}
 	for (int k = 0; k < source.N(); k++)
 	{
 		for (int l = 0; l < source.M(); l++)
@@ -476,7 +488,7 @@ Matrix appendNextToM(const Matrix& m1, const Matrix& m2)
 	if (m1.N() != m2.N())
 	{
 		// error..
-		std::cout << "error\n";
+		std::cout << "Error: matrix dimensions must agree\n";
 		return Matrix();
 	}
 
@@ -490,6 +502,13 @@ Matrix appendNextToM(const Matrix& m1, const Matrix& m2)
 
 Matrix reshapeM(const Matrix& thetas, int startIndex, int n, int m)
 {
+	if (thetas.values.size() < startIndex + n * m)
+	{
+		// error..
+		std::cout << "Error: matrix dimensions must agree\n";
+		return Matrix();
+	}
+
 	Matrix res{ n, m };
 	res.values.clear();
 	res.values.insert(res.values.end(), thetas.values.cbegin() + startIndex, thetas.values.cbegin() + startIndex + n * m);

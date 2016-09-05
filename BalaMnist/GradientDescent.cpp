@@ -24,7 +24,7 @@ void gradientDescent(std::function<float(const Matrix&, Matrix&)> costFun, Matri
 	for (int i = 0; i < numIters; i++)
 	{
 		float cost = costFun(theta, grad);
-		printf("  cost: %f, iter: %d\n", cost, i);
+		printf("  cost: %f, iter: %d\n", cost, (i + 1));
 		theta = theta - grad * alpha;
 	}
 }
